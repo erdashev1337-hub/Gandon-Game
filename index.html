@@ -2,11 +2,34 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Mini O‘yin</title>
   <style>
-    body { text-align: center; background: #f0f0f0; }
-    canvas { background: lightblue; border: 2px solid black; display: block; margin: auto; }
-    button { font-size: 20px; margin: 5px; padding: 10px 20px; }
+    body { 
+      text-align: center; 
+      background: #f0f0f0; 
+      margin: 0; 
+      padding: 0;
+      font-family: sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    canvas { 
+      background: lightblue; 
+      border: 2px solid black; 
+      display: block; 
+      margin: auto; 
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+    }
+    button { 
+      font-size: 20px; 
+      margin: 5px; 
+      padding: 10px 20px; 
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
     h2 { margin: 10px; }
   </style>
 </head>
@@ -25,7 +48,6 @@
     const scoreEl = document.getElementById("score");
     const hpEl = document.getElementById("hp");
 
-    // Player rasmi
     const playerImg = new Image();
     playerImg.src = "https://i.postimg.cc/dZy1d1pQ/image.png";
 
@@ -43,13 +65,9 @@
       grounded: false
     };
 
-    // Yer
     let groundHeight = 50;
-
-    // Tangalar va to‘siqlar
     let coins = [];
     let obstacles = [];
-
     let gameSpeed = 3;
     let frameCount = 0;
 
@@ -97,7 +115,6 @@
     function checkCollisions() {
       let onPlatform = false;
 
-      // Tangalar
       coins.forEach(coin => {
         if (!coin.collected) {
           let dx = (player.x + player.width/2) - coin.x;
@@ -111,7 +128,6 @@
         }
       });
 
-      // Nayza va platforma
       obstacles.forEach(obs => {
         if (obs.type === "spike") {
           if (
@@ -142,18 +158,13 @@
         }
       });
 
-      if (player.y + player.height >= canvas.height - groundHeight) {
-        player.grounded = true;
-      } else {
-        player.grounded = onPlatform;
-      }
+      player.grounded = player.y + player.height >= canvas.height - groundHeight || onPlatform;
     }
 
     function update() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGround();
 
-      // Fizika
       player.y += player.dy;
       player.dy += player.gravity;
 
@@ -165,7 +176,6 @@
 
       drawPlayer();
 
-      // Tangalar va to‘siqlarni siljitish
       coins.forEach(coin => coin.x -= gameSpeed);
       obstacles.forEach(obs => obs.x -= gameSpeed);
 
@@ -176,23 +186,21 @@
       coins = coins.filter(c => c.x > -20);
       obstacles = obstacles.filter(o => o.x > -60);
 
-      // Yangi tanga
       frameCount++;
       if (frameCount % 100 === 0) {
         let coinY = canvas.height - groundHeight - (Math.random() * 60 + 40);
         coins.push({x: canvas.width + 20, y: coinY, radius: 10, collected: false});
       }
 
-      // Yangi to‘siq
       if (frameCount % 150 === 0) {
         let type = Math.random() > 0.5 ? "spike" : "platform";
         if (type === "spike") {
-          let obsHeight = Math.random() * 30 + 30;
+          let obsHeight = Math.random() * 15 + 15; // kichikroq spike
           obstacles.push({
             type: "spike",
             x: canvas.width + 50,
             y: canvas.height - groundHeight - obsHeight,
-            width: 20,
+            width: 15, // torroq spike
             height: obsHeight
           });
         } else {
@@ -222,4 +230,4 @@
     }
   </script>
 </body>
-</html
+</html>
