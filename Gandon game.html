@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini O‘yin</title>
+  <style>
+    body { text-align: center; background: #f0f0f0; }
+    canvas { background: lightblue; border: 2px solid black; display: block; margin: auto; }
+    button { font-size: 20px; margin: 5px; padding: 10px 20px; }
+    h2 { margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🎮 Mini O‘yin</h2>
+  <p>Ball: <span id="score">0</span> | HP: <span id="hp">❤️❤️❤️❤️❤️</span></p>
+  <canvas id="gameCanvas" width="500" height="300"></canvas>
+
+  <div>
+    <button onclick="jump()">⬆️ Sakrash</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const hpEl = document.getElementById("hp");
+
+    // Player rasmi
+    const playerImg = new Image();
+    playerImg.src = "https://i.postimg.cc/dZy1d1pQ/image.png";
+
+    let score = 0;
+    let hp = 5;
+
+    let player = {
+      x: 50,
+      y: 220,
+      width: 50,
+      height: 50,
+      dy: 0,
+      gravity: 0.6,
+      jumpPower: -10,
+      grounded: false
+    };
+
+    // Yer
+    let groundHeight = 50;
+
+    // Tangalar va to‘siqlar
+    let coins = [];
+    let obstacles = [];
+
+    let gameSpeed = 3;
+    let frameCount = 0;
+
+    function drawPlayer() {
+      ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+    }
+
+    function drawGround() {
+      ctx.fillStyle = "green";
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+    }
+
+    function drawCoins() {
+      ctx.fillStyle = "gold";
+      coins.forEach(coin => {
+        if (!coin.collected) {
+          ctx.beginPath();
+          ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    function drawObstacles() {
+      obstacles.forEach(obs => {
+        if (obs.type === "spike") {
+          ctx.fillStyle = "gray";
+          ctx.beginPath();
+          ctx.moveTo(obs.x, obs.y + obs.height);
+          ctx.lineTo(obs.x + obs.width / 2, obs.y);
+          ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
+          ctx.closePath();
+          ctx.fill();
+        } else if (obs.type === "platform") {
+          ctx.fillStyle = "brown";
+          ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        }
+      });
+    }
+
+    function updateHP() {
+      hpEl.innerText = "❤️".repeat(hp);
+    }
+
+    function checkCollisions() {
+      let onPlatform = false;
+
+      // Tangalar
+      coins.forEach(coin => {
+        if (!coin.collected) {
+          let dx = (player.x + player.width/2) - coin.x;
+          let dy = (player.y + player.height/2) - coin.y;
+          let distance = Math.sqrt(dx*dx + dy*dy);
+          if (distance < player.width/2 + coin.radius) {
+            coin.collected = true;
+            score++;
+            scoreEl.innerText = score;
+          }
+        }
+      });
+
+      // Nayza va platforma
+      obstacles.forEach(obs => {
+        if (obs.type === "spike") {
+          if (
+            player.x < obs.x + obs.width &&
+            player.x + player.width > obs.x &&
+            player.y < obs.y + obs.height &&
+            player.y + player.height > obs.y
+          ) {
+            hp--;
+            updateHP();
+            obstacles = obstacles.filter(o => o !== obs);
+            if (hp <= 0) {
+              alert("❌ O‘yin tugadi! Ball: " + score);
+              document.location.reload();
+            }
+          }
+        } else if (obs.type === "platform") {
+          if (
+            player.x < obs.x + obs.width &&
+            player.x + player.width > obs.x &&
+            player.y + player.height <= obs.y + 10 &&
+            player.y + player.height + player.dy >= obs.y
+          ) {
+            player.y = obs.y - player.height;
+            player.dy = 0;
+            onPlatform = true;
+          }
+        }
+      });
+
+      if (player.y + player.height >= canvas.height - groundHeight) {
+        player.grounded = true;
+      } else {
+        player.grounded = onPlatform;
+      }
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGround();
+
+      // Fizika
+      player.y += player.dy;
+      player.dy += player.gravity;
+
+      if (player.y + player.height >= canvas.height - groundHeight) {
+        player.y = canvas.height - groundHeight - player.height;
+        player.dy = 0;
+        player.grounded = true;
+      }
+
+      drawPlayer();
+
+      // Tangalar va to‘siqlarni siljitish
+      coins.forEach(coin => coin.x -= gameSpeed);
+      obstacles.forEach(obs => obs.x -= gameSpeed);
+
+      drawCoins();
+      drawObstacles();
+      checkCollisions();
+
+      coins = coins.filter(c => c.x > -20);
+      obstacles = obstacles.filter(o => o.x > -60);
+
+      // Yangi tanga
+      frameCount++;
+      if (frameCount % 100 === 0) {
+        let coinY = canvas.height - groundHeight - (Math.random() * 60 + 40);
+        coins.push({x: canvas.width + 20, y: coinY, radius: 10, collected: false});
+      }
+
+      // Yangi to‘siq
+      if (frameCount % 150 === 0) {
+        let type = Math.random() > 0.5 ? "spike" : "platform";
+        if (type === "spike") {
+          let obsHeight = Math.random() * 30 + 30;
+          obstacles.push({
+            type: "spike",
+            x: canvas.width + 50,
+            y: canvas.height - groundHeight - obsHeight,
+            width: 20,
+            height: obsHeight
+          });
+        } else {
+          let platHeight = 20;
+          let platY = canvas.height - groundHeight - (Math.random() * 80 + 60);
+          obstacles.push({
+            type: "platform",
+            x: canvas.width + 70,
+            y: platY,
+            width: 60,
+            height: platHeight
+          });
+        }
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    update();
+    updateHP();
+
+    function jump() {
+      if (player.grounded) {
+        player.dy = player.jumpPower;
+        player.grounded = false;
+      }
+    }
+  </script>
+</body>
+</html
