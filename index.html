@@ -36,9 +36,15 @@
 <body>
   <h2>🎮 Mini O‘yin</h2>
   <p>Ball: <span id="score">0</span> | HP: <span id="hp">❤️❤️❤️❤️❤️</span></p>
-  <canvas id="gameCanvas" width="500" height="300"></canvas>
 
-  <div>
+  <!-- Play tugmasi -->
+  <div id="startScreen">
+    <button id="start-btn">▶️ Play</button>
+  </div>
+
+  <canvas id="gameCanvas" width="500" height="300" style="display:none;"></canvas>
+
+  <div id="controls" style="display:none;">
     <button onclick="jump()">⬆️ Sakrash</button>
   </div>
 
@@ -70,6 +76,16 @@
     let obstacles = [];
     let gameSpeed = 3;
     let frameCount = 0;
+    let gameStarted = false;
+
+    // 🎵 Sound fayllari
+    const bgMusic = new Audio('https://drive.google.com/uc?export=download&id=1ZgBxTU4PVZ0WbIluaSyAURzsetrNIz_2');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.5;
+
+    const gameOverSound = new Audio('game-over.mp3'); // o‘zing papkaga qo‘y
+    const jumpSound = new Audio('jump.mp3'); // o‘zing papkaga qo‘y
+    const coinSound = new Audio('coin.mp3'); // o‘zing papkaga qo‘y
 
     function drawPlayer() {
       ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
@@ -81,9 +97,9 @@
     }
 
     function drawCoins() {
-      ctx.fillStyle = "gold";
       coins.forEach(coin => {
         if (!coin.collected) {
+          ctx.fillStyle = "gold";
           ctx.beginPath();
           ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
           ctx.fill();
@@ -124,6 +140,8 @@
             coin.collected = true;
             score++;
             scoreEl.innerText = score;
+            coinSound.currentTime = 0;
+            coinSound.play();
           }
         }
       });
@@ -140,6 +158,8 @@
             updateHP();
             obstacles = obstacles.filter(o => o !== obs);
             if (hp <= 0) {
+              bgMusic.pause();
+              gameOverSound.play();
               alert("❌ O‘yin tugadi! Ball: " + score);
               document.location.reload();
             }
@@ -195,12 +215,12 @@
       if (frameCount % 150 === 0) {
         let type = Math.random() > 0.5 ? "spike" : "platform";
         if (type === "spike") {
-          let obsHeight = Math.random() * 15 + 15; // kichikroq spike
+          let obsHeight = Math.random() * 15 + 15; 
           obstacles.push({
             type: "spike",
             x: canvas.width + 50,
             y: canvas.height - groundHeight - obsHeight,
-            width: 15, // torroq spike
+            width: 15, 
             height: obsHeight
           });
         } else {
@@ -216,18 +236,29 @@
         }
       }
 
-      requestAnimationFrame(update);
+      if(gameStarted) requestAnimationFrame(update);
     }
 
-    update();
     updateHP();
 
     function jump() {
       if (player.grounded) {
         player.dy = player.jumpPower;
         player.grounded = false;
+        jumpSound.currentTime = 0;
+        jumpSound.play();
       }
     }
+
+    // 🎮 Play tugmasi ishlashi
+    document.getElementById('start-btn').addEventListener('click', () => {
+      gameStarted = true;
+      document.getElementById('startScreen').style.display = 'none';
+      canvas.style.display = 'block';
+      document.getElementById('controls').style.display = 'block';
+      bgMusic.play();
+      update(); // o'yinni boshlash
+    });
   </script>
 </body>
 </html>
