@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mini O‘yin</title>
 <style>
-  body { text-align:center; background:#f0f0f0; margin:0; padding:0; font-family:sans-serif; user-select:none;}
-  canvas { background:lightblue; border:2px solid black; display:none; margin:auto; width:100%; max-width:500px; height:auto;}
-  button { font-size:20px; margin:5px; padding:10px 20px;}
-  h2{margin:10px;}
-  #characterSelect {margin-top:20px;}
-  #characters img {width:80px; margin:10px; cursor:pointer; border-radius:10px; transition: transform 0.2s, border 0.2s;}
-  #characters img:hover {transform:scale(1.1);}
-  #selectedName {font-weight:bold; margin:10px; font-size:18px;}
-  #gameOver {font-size:24px; color:red; margin-top:10px; display:none;}
+body { text-align:center; background:#f0f0f0; margin:0; padding:0; font-family:sans-serif; user-select:none;}
+canvas { background:lightblue; border:2px solid black; display:none; margin:auto; width:100%; max-width:500px; height:auto;}
+button { font-size:20px; margin:5px; padding:10px 20px;}
+h2{margin:10px;}
+#characterSelect {margin-top:20px;}
+#characters img {width:80px; margin:10px; cursor:pointer; border-radius:10px; transition: transform 0.2s, border 0.2s;}
+#characters img:hover {transform:scale(1.1);}
+#selectedName {font-weight:bold; margin:10px; font-size:18px;}
+#gameOver {font-size:24px; color:red; margin-top:10px; display:none;}
 </style>
 </head>
 <body>
@@ -48,7 +48,6 @@ const hpEl = document.getElementById("hp");
 const gameOverEl = document.getElementById("gameOver");
 
 let selectedCharacter = null;
-
 function selectCharacter(imgUrl, name){
   selectedCharacter = imgUrl;
   document.querySelectorAll('#characters img').forEach(img=>img.style.border='none');
@@ -56,11 +55,12 @@ function selectCharacter(imgUrl, name){
   document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;
 }
 
-// AUDIO
+// AUDIO POOL
 const bgMusic = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
 bgMusic.loop = true; bgMusic.volume = 0.4;
-const jumpSoundBase = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3');
-const coinSoundBase = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3');
+const jumpSounds = Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3'));
+const coinSounds = Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3'));
+let jumpIndex=0, coinIndex=0;
 const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
 
 document.getElementById('start-btn').addEventListener('click', ()=>{
@@ -73,14 +73,9 @@ document.getElementById('start-btn').addEventListener('click', ()=>{
   startGame();
 });
 
-let score = 0;
-let hp = 5;
-let groundHeight = 50;
-let coins = [];
-let obstacles = [];
-let maxObjects = 10; // maksimal coin/obstacle
-let gameSpeed = 3;
-let frameCount = 0;
+let score=0, hp=5, groundHeight=50;
+let coins=[], obstacles=[];
+let maxObjects=8, gameSpeed=3, frameCount=0;
 const playerImg = new Image();
 let player = {x:50,y:220,width:50,height:50,dy:0,gravity:0.6,jumpPower:-10,grounded:false};
 
@@ -88,22 +83,22 @@ function startGame(){ playerImg.src = selectedCharacter; updateHP(); update(); }
 function updateHP(){ hpEl.innerText = "❤️".repeat(hp); }
 function drawPlayer(){ ctx.drawImage(playerImg,player.x,player.y,player.width,player.height); }
 function drawGround(){ ctx.fillStyle="green"; ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight); }
-
 function drawCoins(){ ctx.fillStyle="gold"; coins.forEach(c=>{if(!c.collected){ctx.beginPath();ctx.arc(c.x,c.y,c.radius,0,Math.PI*2);ctx.fill();}}); }
 function drawObstacles(){ obstacles.forEach(o=>{ if(o.type==="spike"){ctx.fillStyle="gray"; ctx.beginPath();ctx.moveTo(o.x,o.y+o.height);ctx.lineTo(o.x+o.width/2,o.y);ctx.lineTo(o.x+o.width,o.y+o.height);ctx.closePath(); ctx.fill();} else{ctx.fillStyle="brown"; ctx.fillRect(o.x,o.y,o.width,o.height);}}); }
 
 function checkCollisions(){
-  coins.forEach(c=>{ if(!c.collected){ let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; let d=Math.sqrt(dx*dx+dy*dy); if(d<player.width/2+c.radius){ c.collected=true; score++; scoreEl.innerText=score;
-    jumpSoundBase.cloneNode().play();
-    coinSoundBase.cloneNode().play();
+  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x - c.x)<100){ 
+    let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; 
+    if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ 
+      c.collected=true; score++; scoreEl.innerText=score;
+      jumpSounds[jumpIndex].currentTime=0; jumpSounds[jumpIndex].play(); jumpIndex=(jumpIndex+1)%jumpSounds.length;
+      coinSounds[coinIndex].currentTime=0; coinSounds[coinIndex].play(); coinIndex=(coinIndex+1)%coinSounds.length;
   }}});
 
-  obstacles.forEach(o=>{ if(o.type==="spike" && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){
-    hp--; updateHP();
-    obstacles=obstacles.filter(x=>x!==o);
+  obstacles.forEach(o=>{ if(o.type==="spike" && Math.abs(player.x-o.x)<100 && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){
+    hp--; updateHP(); obstacles=obstacles.filter(x=>x!==o);
     if(hp<=0){
-      bgMusic.pause();
-      gameOverSound.play();
+      bgMusic.pause(); gameOverSound.play();
       gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score;
       gameOverEl.style.display='block';
     }
@@ -119,19 +114,23 @@ function update(){
   player.y += player.dy; player.dy += player.gravity;
   if(player.y+player.height>=canvas.height-groundHeight){player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true;}
 
-  coins.forEach(c=>c.x-=gameSpeed);
-  obstacles.forEach(o=>o.x-=gameSpeed);
-  coins=coins.filter(c=>c.x>-20);
-  obstacles=obstacles.filter(o=>o.x>-60);
+  coins.forEach(c=>c.x-=gameSpeed); obstacles.forEach(o=>o.x-=gameSpeed);
+  coins=coins.filter(c=>c.x>-20); obstacles=obstacles.filter(o=>o.x>-60);
 
   frameCount++;
-  if(frameCount%100===0 && coins.length<maxObjects){ let y = canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:y,radius:10,collected:false}); }
-  if(frameCount%150===0 && obstacles.length<maxObjects){ let h=Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-h,width:15,height:h}); }
+  if(frameCount%120===0 && coins.length<maxObjects){ let y = canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:y,radius:10,collected:false}); }
+  if(frameCount%200===0 && obstacles.length<maxObjects){ let h=Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-h,width:15,height:h}); }
 
   if(hp>0) requestAnimationFrame(update);
 }
 
-function jump(){ if(player.grounded){ player.dy=player.jumpPower; player.grounded=false; jumpSoundBase.cloneNode().play(); }
+function jump(){ 
+  if(player.grounded){ 
+    player.dy=player.jumpPower; 
+    player.grounded=false; 
+    jumpSounds[jumpIndex].currentTime=0; jumpSounds[jumpIndex].play(); 
+    jumpIndex=(jumpIndex+1)%jumpSounds.length;
+  }
 }
 </script>
 </body>
