@@ -17,7 +17,7 @@
     canvas { 
       background: lightblue; 
       border: 2px solid black; 
-      display: block; 
+      display: none; 
       margin: auto; 
       width: 100%;
       max-width: 500px;
@@ -31,7 +31,6 @@
       touch-action: manipulation;
     }
     h2 { margin: 10px; }
-    
     #characterSelect {
       text-align: center;
       margin-top: 20px;
@@ -46,6 +45,11 @@
     #characters img:hover {
       transform: scale(1.1);
     }
+    #selectedName {
+      font-weight: bold;
+      margin: 10px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -57,37 +61,69 @@
     <button id="start-btn">▶️ Play</button>
   </div>
 
+  <!-- Qahramon tanlash -->
   <div id="characterSelect">
-    <h2>Qahramon tanla</h2>
+    <h3>Qahramon tanla</h3>
     <div id="characters">
-      <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png')">
-      <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png')">
-      <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png')">
-      <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="rtxpower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png')">
-      <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png')">
-      <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png')">
-      <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png')">
+      <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png', 'Utkpower')">
+      <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png', 'New Utkpower')">
+      <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png', 'Brother Tora')">
+      <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="rtxpower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png', 'RTXPower')">
+      <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak')">
+      <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek')">
+      <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer')">
     </div>
+    <p id="selectedName"></p>
   </div>
 
-  <canvas id="gameCanvas" width="500" height="300" style="display:none;"></canvas>
+  <canvas id="gameCanvas" width="500" height="300"></canvas>
 
   <div id="controls" style="display:none;">
     <button onclick="jump()">⬆️ Sakrash</button>
   </div>
 
   <script>
+    // Asosiy elementlar
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const scoreEl = document.getElementById("score");
     const hpEl = document.getElementById("hp");
 
-    const playerImg = new Image();
-    playerImg.src = "https://i.postimg.cc/dZy1d1pQ/image.png";
+    let selectedCharacter = null;
+    let selectedName = "";
 
+    // Qahramon tanlash
+    function selectCharacter(imgUrl, name) {
+      selectedCharacter = imgUrl;
+      selectedName = name;
+      document.querySelectorAll('#characters img').forEach(img => img.style.border = 'none');
+      event.target.style.border = '3px solid blue';
+      document.getElementById("selectedName").innerText = "Tanlangan qahramon: " + name;
+    }
+
+    // Play tugmasi
+    document.getElementById('start-btn').addEventListener('click', () => {
+      if (!selectedCharacter) {
+        alert("Iltimos, qahramonni tanlang!");
+        return;
+      }
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('characterSelect').style.display = 'none';
+      canvas.style.display = 'block';
+      document.getElementById('controls').style.display = 'block';
+      startGame();
+    });
+
+    // O‘yin ma’lumotlari
     let score = 0;
     let hp = 5;
+    let groundHeight = 50;
+    let coins = [];
+    let obstacles = [];
+    let gameSpeed = 3;
+    let frameCount = 0;
 
+    const playerImg = new Image();
     let player = {
       x: 50,
       y: 220,
@@ -99,21 +135,24 @@
       grounded: false
     };
 
-    let groundHeight = 50;
-    let coins = [];
-    let obstacles = [];
-    let gameSpeed = 3;
-    let frameCount = 0;
-    let gameStarted = false;
-
-    // 🎵 Sound fayllari
+    // Tovushlar
     const bgMusic = new Audio('https://erdashev1337-hub.github.io/Music/bg-music.mp3');
     bgMusic.loop = true;
-    bgMusic.volume = 0.5;
+    bgMusic.volume = 0.4;
+    const jumpSound = new Audio('https://erdashev1337-hub.github.io/Music/jump.mp3');
+    const coinSound = new Audio('https://erdashev1337-hub.github.io/Music/coin.mp3');
+    const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Music/game-over.mp3');
 
-    const gameOverSound = new Audio('game-over.mp3'); // o‘zing papkaga qo‘y
-    const jumpSound = new Audio('jump.mp3'); // o‘zing papkaga qo‘y
-    const coinSound = new Audio('coin.mp3'); // o‘zing papkaga qo‘y
+    function startGame() {
+      playerImg.src = selectedCharacter;
+      updateHP();
+      bgMusic.play();
+      update();
+    }
+
+    function updateHP() {
+      hpEl.innerText = "❤️".repeat(hp);
+    }
 
     function drawPlayer() {
       ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
@@ -125,9 +164,9 @@
     }
 
     function drawCoins() {
+      ctx.fillStyle = "gold";
       coins.forEach(coin => {
         if (!coin.collected) {
-          ctx.fillStyle = "gold";
           ctx.beginPath();
           ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
           ctx.fill();
@@ -145,15 +184,11 @@
           ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
           ctx.closePath();
           ctx.fill();
-        } else if (obs.type === "platform") {
+        } else {
           ctx.fillStyle = "brown";
           ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
         }
       });
-    }
-
-    function updateHP() {
-      hpEl.innerText = "❤️".repeat(hp);
     }
 
     function checkCollisions() {
@@ -175,33 +210,19 @@
       });
 
       obstacles.forEach(obs => {
-        if (obs.type === "spike") {
-          if (
+        if (obs.type === "spike" &&
             player.x < obs.x + obs.width &&
             player.x + player.width > obs.x &&
             player.y < obs.y + obs.height &&
-            player.y + player.height > obs.y
-          ) {
-            hp--;
-            updateHP();
-            obstacles = obstacles.filter(o => o !== obs);
-            if (hp <= 0) {
-              bgMusic.pause();
-              gameOverSound.play();
-              alert("❌ O‘yin tugadi! Ball: " + score);
-              document.location.reload();
-            }
-          }
-        } else if (obs.type === "platform") {
-          if (
-            player.x < obs.x + obs.width &&
-            player.x + player.width > obs.x &&
-            player.y + player.height <= obs.y + 10 &&
-            player.y + player.height + player.dy >= obs.y
-          ) {
-            player.y = obs.y - player.height;
-            player.dy = 0;
-            onPlatform = true;
+            player.y + player.height > obs.y) {
+          hp--;
+          updateHP();
+          obstacles = obstacles.filter(o => o !== obs);
+          if (hp <= 0) {
+            bgMusic.pause();
+            gameOverSound.play();
+            alert("❌ O‘yin tugadi! Ball: " + score);
+            location.reload();
           }
         }
       });
@@ -212,25 +233,21 @@
     function update() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawGround();
+      drawPlayer();
+      drawCoins();
+      drawObstacles();
+      checkCollisions();
 
       player.y += player.dy;
       player.dy += player.gravity;
-
       if (player.y + player.height >= canvas.height - groundHeight) {
         player.y = canvas.height - groundHeight - player.height;
         player.dy = 0;
         player.grounded = true;
       }
 
-      drawPlayer();
-
-      coins.forEach(coin => coin.x -= gameSpeed);
-      obstacles.forEach(obs => obs.x -= gameSpeed);
-
-      drawCoins();
-      drawObstacles();
-      checkCollisions();
-
+      coins.forEach(c => c.x -= gameSpeed);
+      obstacles.forEach(o => o.x -= gameSpeed);
       coins = coins.filter(c => c.x > -20);
       obstacles = obstacles.filter(o => o.x > -60);
 
@@ -241,33 +258,18 @@
       }
 
       if (frameCount % 150 === 0) {
-        let type = Math.random() > 0.5 ? "spike" : "platform";
-        if (type === "spike") {
-          let obsHeight = Math.random() * 15 + 15; 
-          obstacles.push({
-            type: "spike",
-            x: canvas.width + 50,
-            y: canvas.height - groundHeight - obsHeight,
-            width: 15, 
-            height: obsHeight
-          });
-        } else {
-          let platHeight = 20;
-          let platY = canvas.height - groundHeight - (Math.random() * 80 + 60);
-          obstacles.push({
-            type: "platform",
-            x: canvas.width + 70,
-            y: platY,
-            width: 60,
-            height: platHeight
-          });
-        }
+        let obsHeight = Math.random() * 15 + 15;
+        obstacles.push({
+          type: "spike",
+          x: canvas.width + 50,
+          y: canvas.height - groundHeight - obsHeight,
+          width: 15,
+          height: obsHeight
+        });
       }
 
-      if(gameStarted) requestAnimationFrame(update);
+      requestAnimationFrame(update);
     }
-
-    updateHP();
 
     function jump() {
       if (player.grounded) {
@@ -277,36 +279,6 @@
         jumpSound.play();
       }
     }
-
-    // 🎮 Play tugmasi ishlashi
-    document.getElementById('start-btn').addEventListener('click', () => {
-      gameStarted = true;
-      document.getElementById('startScreen').style.display = 'none';
-      canvas.style.display = 'block';
-      document.getElementById('controls').style.display = 'block';
-      bgMusic.play();
-      update(); // o'yinni boshlash
-    
-    let selectedCharacter = null;
-
-    function selectedCharacter(imgUrl) {
-      selectedCharacter = imgUrl;
-      document.queryselectorall('#characters img').forEach(img => img.style.border = 'none');
-      event.target.style.border = '3px solid blue';
-    }
-
-    document.getElementById('start-btn').addEventListener('click', () => {
-      if (!selectedCharacter) {
-        alert("Iltimos, qahramon tanlang!");
-        return;
-      }
-      document.getElementById('characterSelect').style.display = 'none';
-      document.getElementById('gameCanvas').style.display = 'block';
-
-      playerImg.src = selectedCharacter;
-      bgmusic.play();
-      update();
-    });  
   </script>
 </body>
 </html>
