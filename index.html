@@ -1,216 +1,136 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Mini O‘yin</title>
-  <style>
-    body { 
-      text-align: center; 
-      background: #f0f0f0; 
-      margin: 0; 
-      padding: 0;
-      font-family: sans-serif;
-      -webkit-user-select: none;
-      user-select: none;
-    }
-    canvas { 
-      background: lightblue; 
-      border: 2px solid black; 
-      display: none; 
-      margin: auto; 
-      width: 100%;
-      max-width: 500px;
-      height: auto;
-    }
-    button { 
-      font-size: 20px; 
-      margin: 5px; 
-      padding: 10px 20px; 
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    h2 { margin: 10px; }
-    #characterSelect {
-      text-align: center;
-      margin-top: 20px;
-    }
-    #characters img {
-      width: 80px;
-      margin: 10px;
-      cursor: pointer;
-      border-radius: 10px;
-      transition: transform 0.2s, border 0.2s;
-    }
-    #characters img:hover {
-      transform: scale(1.1);
-    }
-    #selectedName {
-      font-weight: bold;
-      margin: 10px;
-      font-size: 18px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Mini O‘yin</title>
+<style>
+  body { text-align:center; background:#f0f0f0; margin:0; padding:0; font-family:sans-serif; -webkit-user-select:none; user-select:none;}
+  canvas { background:lightblue; border:2px solid black; display:none; margin:auto; width:100%; max-width:500px; height:auto;}
+  button { font-size:20px; margin:5px; padding:10px 20px; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
+  h2{margin:10px;}
+  #characterSelect {text-align:center; margin-top:20px;}
+  #characters img {width:80px; margin:10px; cursor:pointer; border-radius:10px; transition: transform 0.2s, border 0.2s;}
+  #characters img:hover {transform:scale(1.1);}
+  #selectedName {font-weight:bold; margin:10px; font-size:18px;}
+  #gameOver {font-size:24px; color:red; margin-top:10px; display:none;}
+</style>
 </head>
 <body>
-  <h2>🎮 Mini O‘yin</h2>
-  <p>Ball: <span id="score">0</span> | HP: <span id="hp">❤️❤️❤️❤️❤️</span></p>
 
-  <div id="startScreen">
-    <button id="start-btn">▶️ Play</button>
+<h2>🎮 Mini O‘yin</h2>
+<p>Ball: <span id="score">0</span> | HP: <span id="hp">❤️❤️❤️❤️❤️</span></p>
+<div id="gameOver"></div>
+
+<div id="startScreen">
+  <button id="start-btn">▶️ Play</button>
+</div>
+
+<div id="characterSelect">
+  <h3>Qahramon tanla</h3>
+  <div id="characters">
+    <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png', 'Utkpower')">
+    <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png', 'New Utkpower')">
+    <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png', 'Brother Tora')">
+    <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="rtxpower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png', 'RTXPower')">
+    <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak')">
+    <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek')">
+    <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer')">
   </div>
+  <p id="selectedName"></p>
+</div>
 
-  <div id="characterSelect">
-    <h3>Qahramon tanla</h3>
-    <div id="characters">
-      <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png', 'Utkpower')">
-      <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png', 'New Utkpower')">
-      <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png', 'Brother Tora')">
-      <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="rtxpower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png', 'RTXPower')">
-      <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak')">
-      <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek')">
-      <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer')">
-    </div>
-    <p id="selectedName"></p>
-  </div>
+<canvas id="gameCanvas" width="500" height="300"></canvas>
+<div id="controls" style="display:none;"><button onclick="jump()">⬆️ Sakrash</button></div>
 
-  <canvas id="gameCanvas" width="500" height="300"></canvas>
+<script>
+const canvas=document.getElementById("gameCanvas");
+const ctx=canvas.getContext("2d");
+const scoreEl=document.getElementById("score");
+const hpEl=document.getElementById("hp");
+const gameOverEl=document.getElementById("gameOver");
 
-  <div id="controls" style="display:none;">
-    <button onclick="jump()">⬆️ Sakrash</button>
-  </div>
+let selectedCharacter=null;
+let selectedName="";
+function selectCharacter(imgUrl,name){
+  selectedCharacter=imgUrl;
+  selectedName=name;
+  document.querySelectorAll('#characters img').forEach(img=>img.style.border='none');
+  event.target.style.border='3px solid blue';
+  document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;
+}
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const scoreEl = document.getElementById("score");
-    const hpEl = document.getElementById("hp");
+// AUDIO
+const bgMusic=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
+bgMusic.loop=true; bgMusic.volume=0.4;
+const jumpSoundBase=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3');
+const coinSoundBase=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3');
+const gameOverSound=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
 
-    let selectedCharacter = null;
-    let selectedName = "";
+document.getElementById('start-btn').addEventListener('click',()=>{
+  if(!selectedCharacter){alert("Iltimos, qahramonni tanlang!"); return;}
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('characterSelect').style.display='none';
+  canvas.style.display='block';
+  document.getElementById('controls').style.display='block';
+  bgMusic.play().catch(e=>console.log("Audio play xatosi:",e));
+  startGame();
+});
 
-    function selectCharacter(imgUrl, name) {
-      selectedCharacter = imgUrl;
-      selectedName = name;
-      document.querySelectorAll('#characters img').forEach(img => img.style.border = 'none');
-      event.target.style.border = '3px solid blue';
-      document.getElementById("selectedName").innerText = "Tanlangan qahramon: " + name;
-    }
+let score=0;
+let hp=5;
+let groundHeight=50;
+let coins=[];
+let obstacles=[];
+let gameSpeed=3;
+let frameCount=0;
+const playerImg=new Image();
+let player={x:50,y:220,width:50,height:50,dy:0,gravity:0.6,jumpPower:-10,grounded:false};
 
-    // AUDIO LINKLARI – GitHub Pages bilan ishlash
-    const bgMusic = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
-    bgMusic.loop = true;
-    bgMusic.volume = 0.4;
+function startGame(){playerImg.src=selectedCharacter;updateHP();update();}
 
-    const jumpSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3');
-    const coinSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3');
-    const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
+function updateHP(){hpEl.innerText="❤️".repeat(hp);}
+function drawPlayer(){ctx.drawImage(playerImg,player.x,player.y,player.width,player.height);}
+function drawGround(){ctx.fillStyle="green"; ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight);}
+function drawCoins(){ctx.fillStyle="gold"; coins.forEach(coin=>{if(!coin.collected){ctx.beginPath();ctx.arc(coin.x,coin.y,coin.radius,0,Math.PI*2);ctx.fill();}});}
+function drawObstacles(){obstacles.forEach(obs=>{if(obs.type==="spike"){ctx.fillStyle="gray"; ctx.beginPath();ctx.moveTo(obs.x,obs.y+obs.height);ctx.lineTo(obs.x+obs.width/2,obs.y);ctx.lineTo(obs.x+obs.width,obs.y+obs.height);ctx.closePath(); ctx.fill();} else{ctx.fillStyle="brown"; ctx.fillRect(obs.x,obs.y,obs.width,obs.height);}});}
 
-    document.getElementById('start-btn').addEventListener('click', () => {
-      if (!selectedCharacter) {
-        alert("Iltimos, qahramonni tanlang!");
-        return;
-      }
+function checkCollisions(){
+  coins.forEach(coin=>{if(!coin.collected){let dx=(player.x+player.width/2)-coin.x; let dy=(player.y+player.height/2)-coin.y; let distance=Math.sqrt(dx*dx+dy*dy); if(distance<player.width/2+coin.radius){coin.collected=true; score++; scoreEl.innerText=score; 
+    let jumpAudio=jumpSoundBase.cloneNode(); jumpAudio.play();
+    let coinAudio=coinSoundBase.cloneNode(); coinAudio.play();
+  }}});
 
-      document.getElementById('startScreen').style.display = 'none';
-      document.getElementById('characterSelect').style.display = 'none';
-      canvas.style.display = 'block';
-      document.getElementById('controls').style.display = 'block';
+  obstacles.forEach(obs=>{if(obs.type==="spike" && player.x<obs.x+obs.width && player.x+player.width>obs.x && player.y<obs.y+obs.height && player.y+player.height>obs.y){hp--; updateHP(); obstacles=obstacles.filter(o=>o!==obs);
+    if(hp<=0){
+      bgMusic.pause(); gameOverSound.play();
+      gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score;
+      gameOverEl.style.display='block';
+    }}});
 
-      // Autoplay cheklovini yengib, Play tugmasi bosilganda audio ishlaydi
-      bgMusic.play().catch(e => console.log("Audio play xatosi:", e));
+  player.grounded=player.y+player.height>=canvas.height-groundHeight;
+}
 
-      startGame();
-    });
+function update(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGround(); drawPlayer(); drawCoins(); drawObstacles(); checkCollisions();
 
-    let score = 0;
-    let hp = 5;
-    let groundHeight = 50;
-    let coins = [];
-    let obstacles = [];
-    let gameSpeed = 3;
-    let frameCount = 0;
+  player.y+=player.dy; player.dy+=player.gravity;
+  if(player.y+player.height>=canvas.height-groundHeight){player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true;}
 
-    const playerImg = new Image();
-    let player = { x: 50, y: 220, width: 50, height: 50, dy: 0, gravity: 0.6, jumpPower: -10, grounded: false };
+  coins.forEach(c=>c.x-=gameSpeed);
+  obstacles.forEach(o=>o.x-=gameSpeed);
+  coins=coins.filter(c=>c.x>-20);
+  obstacles=obstacles.filter(o=>o.x>-60);
 
-    function startGame() {
-      playerImg.src = selectedCharacter;
-      updateHP();
-      update();
-    }
+  frameCount++;
+  if(frameCount%100===0){let coinY=canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:coinY,radius:10,collected:false});}
+  if(frameCount%150===0){let obsHeight=Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-obsHeight,width:15,height:obsHeight});}
 
-    function updateHP() { hpEl.innerText = "❤️".repeat(hp); }
+  if(hp>0){requestAnimationFrame(update);}
+}
 
-    function drawPlayer() { ctx.drawImage(playerImg, player.x, player.y, player.width, player.height); }
-    function drawGround() { ctx.fillStyle = "green"; ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight); }
-
-    function drawCoins() {
-      ctx.fillStyle = "gold";
-      coins.forEach(coin => { if (!coin.collected) { ctx.beginPath(); ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI*2); ctx.fill(); } });
-    }
-
-    function drawObstacles() {
-      obstacles.forEach(obs => {
-        if (obs.type === "spike") {
-          ctx.fillStyle = "gray"; ctx.beginPath(); ctx.moveTo(obs.x, obs.y+obs.height); ctx.lineTo(obs.x+obs.width/2, obs.y); ctx.lineTo(obs.x+obs.width, obs.y+obs.height); ctx.closePath(); ctx.fill();
-        } else { ctx.fillStyle = "brown"; ctx.fillRect(obs.x, obs.y, obs.width, obs.height); }
-      });
-    }
-
-    function checkCollisions() {
-      coins.forEach(coin => {
-        if (!coin.collected) {
-          let dx = (player.x + player.width/2) - coin.x;
-          let dy = (player.y + player.height/2) - coin.y;
-          let distance = Math.sqrt(dx*dx + dy*dy);
-          if (distance < player.width/2 + coin.radius) {
-            coin.collected = true;
-            score++; scoreEl.innerText = score;
-            jumpSound.currentTime = 0; jumpSound.play();
-            coinSound.currentTime = 0; coinSound.play();
-          }
-        }
-      });
-
-      obstacles.forEach(obs => {
-        if (obs.type === "spike" && player.x < obs.x + obs.width && player.x + player.width > obs.x && player.y < obs.y + obs.height && player.y + player.height > obs.y) {
-          hp--; updateHP();
-          obstacles = obstacles.filter(o => o !== obs);
-          if (hp <= 0) {
-            bgMusic.pause();
-            gameOverSound.play();
-            gameOverSound.onended = () => { alert("❌ O‘yin tugadi! Ball: " + score); location.reload(); }
-          }
-        }
-      });
-
-      player.grounded = player.y + player.height >= canvas.height - groundHeight;
-    }
-
-    function update() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      drawGround(); drawPlayer(); drawCoins(); drawObstacles(); checkCollisions();
-
-      player.y += player.dy;
-      player.dy += player.gravity;
-      if(player.y + player.height >= canvas.height - groundHeight) { player.y = canvas.height - groundHeight - player.height; player.dy = 0; player.grounded = true; }
-
-      coins.forEach(c=>c.x-=gameSpeed);
-      obstacles.forEach(o=>o.x-=gameSpeed);
-      coins = coins.filter(c=>c.x>-20);
-      obstacles = obstacles.filter(o=>o.x>-60);
-
-      frameCount++;
-      if(frameCount % 100 === 0) { let coinY = canvas.height - groundHeight - (Math.random()*60+40); coins.push({x:canvas.width+20,y:coinY,radius:10,collected:false}); }
-      if(frameCount % 150 === 0) { let obsHeight = Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-obsHeight,width:15,height:obsHeight}); }
-
-      requestAnimationFrame(update);
-    }
-
-    function jump() {
-      if(player.grounded) { player.dy = player.jumpPower; player.grounded = false; jumpSound.currentTime=0; jumpSound.play(); }
-    }
-  </script>
+function jump(){if(player.grounded){player.dy=player.jumpPower; player.grounded=false; let jumpAudio=jumpSoundBase.cloneNode(); jumpAudio.play();}}
+</script>
 </body>
 </html>
