@@ -56,12 +56,10 @@
   <h2>🎮 Mini O‘yin</h2>
   <p>Ball: <span id="score">0</span> | HP: <span id="hp">❤️❤️❤️❤️❤️</span></p>
 
-  <!-- Play tugmasi -->
   <div id="startScreen">
     <button id="start-btn">▶️ Play</button>
   </div>
 
-  <!-- Qahramon tanlash -->
   <div id="characterSelect">
     <h3>Qahramon tanla</h3>
     <div id="characters">
@@ -83,7 +81,6 @@
   </div>
 
   <script>
-    // Asosiy elementlar
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const scoreEl = document.getElementById("score");
@@ -92,7 +89,6 @@
     let selectedCharacter = null;
     let selectedName = "";
 
-    // Qahramon tanlash
     function selectCharacter(imgUrl, name) {
       selectedCharacter = imgUrl;
       selectedName = name;
@@ -101,7 +97,6 @@
       document.getElementById("selectedName").innerText = "Tanlangan qahramon: " + name;
     }
 
-    // Play tugmasi
     document.getElementById('start-btn').addEventListener('click', () => {
       if (!selectedCharacter) {
         alert("Iltimos, qahramonni tanlang!");
@@ -114,7 +109,6 @@
       startGame();
     });
 
-    // O‘yin ma’lumotlari
     let score = 0;
     let hp = 5;
     let groundHeight = 50;
@@ -124,24 +118,14 @@
     let frameCount = 0;
 
     const playerImg = new Image();
-    let player = {
-      x: 50,
-      y: 220,
-      width: 50,
-      height: 50,
-      dy: 0,
-      gravity: 0.6,
-      jumpPower: -10,
-      grounded: false
-    };
+    let player = { x: 50, y: 220, width: 50, height: 50, dy: 0, gravity: 0.6, jumpPower: -10, grounded: false };
 
-    // Tovushlar
-    const bgMusic = new Audio('https://erdashev1337-hub.github.io/Music/bg-music.mp3');
-    bgMusic.loop = true;
-    bgMusic.volume = 0.4;
-    const jumpSound = new Audio('https://erdashev1337-hub.github.io/Music/jump.mp3');
-    const coinSound = new Audio('https://erdashev1337-hub.github.io/Music/coin.mp3');
-    const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Music/game-over.mp3');
+    // TO‘LIQ AUDIO LINKLARI – bu yerga o‘zingizning GitHub Pages linklarini yozing
+    const bgMusic = new Audio('https://<username>.github.io/<repo>/Music/bg-music.mp3');
+    bgMusic.loop = true; bgMusic.volume = 0.4;
+    const jumpSound = new Audio('https://<username>.github.io/<repo>/Music/jump.mp3');
+    const coinSound = new Audio('https://<username>.github.io/<repo>/Music/coin.mp3');
+    const gameOverSound = new Audio('https://<username>.github.io/<repo>/Music/game-over.mp3');
 
     function startGame() {
       playerImg.src = selectedCharacter;
@@ -150,50 +134,25 @@
       update();
     }
 
-    function updateHP() {
-      hpEl.innerText = "❤️".repeat(hp);
-    }
+    function updateHP() { hpEl.innerText = "❤️".repeat(hp); }
 
-    function drawPlayer() {
-      ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
-    }
-
-    function drawGround() {
-      ctx.fillStyle = "green";
-      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
-    }
+    function drawPlayer() { ctx.drawImage(playerImg, player.x, player.y, player.width, player.height); }
+    function drawGround() { ctx.fillStyle = "green"; ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight); }
 
     function drawCoins() {
       ctx.fillStyle = "gold";
-      coins.forEach(coin => {
-        if (!coin.collected) {
-          ctx.beginPath();
-          ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
+      coins.forEach(coin => { if (!coin.collected) { ctx.beginPath(); ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI*2); ctx.fill(); } });
     }
 
     function drawObstacles() {
       obstacles.forEach(obs => {
         if (obs.type === "spike") {
-          ctx.fillStyle = "gray";
-          ctx.beginPath();
-          ctx.moveTo(obs.x, obs.y + obs.height);
-          ctx.lineTo(obs.x + obs.width / 2, obs.y);
-          ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
-          ctx.closePath();
-          ctx.fill();
-        } else {
-          ctx.fillStyle = "brown";
-          ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        }
+          ctx.fillStyle = "gray"; ctx.beginPath(); ctx.moveTo(obs.x, obs.y+obs.height); ctx.lineTo(obs.x+obs.width/2, obs.y); ctx.lineTo(obs.x+obs.width, obs.y+obs.height); ctx.closePath(); ctx.fill();
+        } else { ctx.fillStyle = "brown"; ctx.fillRect(obs.x, obs.y, obs.width, obs.height); }
       });
     }
 
     function checkCollisions() {
-      let onPlatform = false;
-
       coins.forEach(coin => {
         if (!coin.collected) {
           let dx = (player.x + player.width/2) - coin.x;
@@ -201,83 +160,49 @@
           let distance = Math.sqrt(dx*dx + dy*dy);
           if (distance < player.width/2 + coin.radius) {
             coin.collected = true;
-            score++;
-            scoreEl.innerText = score;
-            coinSound.currentTime = 0;
-            coinSound.play();
+            score++; scoreEl.innerText = score;
+            coinSound.currentTime = 0; coinSound.play();
           }
         }
       });
 
       obstacles.forEach(obs => {
-        if (obs.type === "spike" &&
-            player.x < obs.x + obs.width &&
-            player.x + player.width > obs.x &&
-            player.y < obs.y + obs.height &&
-            player.y + player.height > obs.y) {
-          hp--;
-          updateHP();
+        if (obs.type === "spike" && player.x < obs.x + obs.width && player.x + player.width > obs.x && player.y < obs.y + obs.height && player.y + player.height > obs.y) {
+          hp--; updateHP();
           obstacles = obstacles.filter(o => o !== obs);
           if (hp <= 0) {
             bgMusic.pause();
             gameOverSound.play();
-            alert("❌ O‘yin tugadi! Ball: " + score);
-            location.reload();
+            gameOverSound.onended = () => { alert("❌ O‘yin tugadi! Ball: " + score); location.reload(); }
           }
         }
       });
 
-      player.grounded = player.y + player.height >= canvas.height - groundHeight || onPlatform;
+      player.grounded = player.y + player.height >= canvas.height - groundHeight;
     }
 
     function update() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGround();
-      drawPlayer();
-      drawCoins();
-      drawObstacles();
-      checkCollisions();
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      drawGround(); drawPlayer(); drawCoins(); drawObstacles(); checkCollisions();
 
       player.y += player.dy;
       player.dy += player.gravity;
-      if (player.y + player.height >= canvas.height - groundHeight) {
-        player.y = canvas.height - groundHeight - player.height;
-        player.dy = 0;
-        player.grounded = true;
-      }
+      if(player.y + player.height >= canvas.height - groundHeight) { player.y = canvas.height - groundHeight - player.height; player.dy = 0; player.grounded = true; }
 
-      coins.forEach(c => c.x -= gameSpeed);
-      obstacles.forEach(o => o.x -= gameSpeed);
-      coins = coins.filter(c => c.x > -20);
-      obstacles = obstacles.filter(o => o.x > -60);
+      coins.forEach(c=>c.x-=gameSpeed);
+      obstacles.forEach(o=>o.x-=gameSpeed);
+      coins = coins.filter(c=>c.x>-20);
+      obstacles = obstacles.filter(o=>o.x>-60);
 
       frameCount++;
-      if (frameCount % 100 === 0) {
-        let coinY = canvas.height - groundHeight - (Math.random() * 60 + 40);
-        coins.push({x: canvas.width + 20, y: coinY, radius: 10, collected: false});
-      }
-
-      if (frameCount % 150 === 0) {
-        let obsHeight = Math.random() * 15 + 15;
-        obstacles.push({
-          type: "spike",
-          x: canvas.width + 50,
-          y: canvas.height - groundHeight - obsHeight,
-          width: 15,
-          height: obsHeight
-        });
-      }
+      if(frameCount % 100 === 0) { let coinY = canvas.height - groundHeight - (Math.random()*60+40); coins.push({x:canvas.width+20,y:coinY,radius:10,collected:false}); }
+      if(frameCount % 150 === 0) { let obsHeight = Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-obsHeight,width:15,height:obsHeight}); }
 
       requestAnimationFrame(update);
     }
 
     function jump() {
-      if (player.grounded) {
-        player.dy = player.jumpPower;
-        player.grounded = false;
-        jumpSound.currentTime = 0;
-        jumpSound.play();
-      }
+      if(player.grounded) { player.dy = player.jumpPower; player.grounded = false; jumpSound.currentTime=0; jumpSound.play(); }
     }
   </script>
 </body>
