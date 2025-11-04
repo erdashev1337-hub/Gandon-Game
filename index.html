@@ -31,6 +31,21 @@
       touch-action: manipulation;
     }
     h2 { margin: 10px; }
+    
+    #characterSelect {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #characters img {
+      width: 80px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: transform 0.2s, border 0.2s;
+    }
+    #characters img:hover {
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -40,6 +55,20 @@
   <!-- Play tugmasi -->
   <div id="startScreen">
     <button id="start-btn">▶️ Play</button>
+  </div>
+
+  <div id="characterSelect">
+    <h2>Qahramon tanla</h2>
+    <div id="characters">
+      <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png')">
+      <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png')">
+      <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png')">
+      <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="rtxpower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png')">
+      <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png')">
+      <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png')">
+      <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png')">
+    </div>
+    <button id="start-btn">Boshlash</button>
   </div>
 
   <canvas id="gameCanvas" width="500" height="300" style="display:none;"></canvas>
@@ -258,7 +287,27 @@
       document.getElementById('controls').style.display = 'block';
       bgMusic.play();
       update(); // o'yinni boshlash
-    });
+    
+    let selectedCharacter = null;
+
+    function selectedCharacter(imgUrl) {
+      selectedCharacter = imgUrl;
+      document.queryselectorall('#characters img').forEach(img => img.style.border = 'none');
+      event.target.style.border = '3px solid blue';
+    }
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+      if (!selectedCharacter) {
+        alert("Iltimos, qahramon tanlang!");
+        return;
+      }
+      document.getElementById('characterSelect').style.display = 'none';
+      document.getElementById('gameCanvas').style.display = 'block';
+
+      playerImg.src = selectedCharacter;
+      bgmusic.play();
+      update();
+    });  
   </script>
 </body>
 </html>
