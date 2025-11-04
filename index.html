@@ -29,13 +29,13 @@ h2{margin:10px;}
 <div id="characterSelect">
   <h3>Qahramon tanla</h3>
   <div id="characters">
-    <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png','Utkpower')">
-    <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png','New Utkpower')">
-    <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png','Brother Tora')">
-    <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="RTXPower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png','RTXPower')">
-    <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak')">
-    <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek')">
-    <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer')">
+    <img src="https://i.postimg.cc/dZy1d1pQ/image.png" alt="utkpower" onclick="selectCharacter('https://i.postimg.cc/dZy1d1pQ/image.png','Utkpower', event)">
+    <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png','New Utkpower', event)">
+    <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png','Brother Tora', event)">
+    <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="RTXPower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png','RTXPower', event)">
+    <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak', event)">
+    <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek', event)">
+    <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer', event)">
   </div>
   <p id="selectedName"></p>
 </div>
@@ -48,7 +48,8 @@ const canvas=document.getElementById("gameCanvas"), ctx=canvas.getContext("2d");
 const scoreEl=document.getElementById("score"), hpEl=document.getElementById("hp"), gameOverEl=document.getElementById("gameOver");
 let selectedCharacter=null;
 
-function selectCharacter(img,name){
+function selectCharacter(img,name,event){
+  event.preventDefault(); // double tap zoomni to‘xtatadi
   selectedCharacter=img;
   document.querySelectorAll('#characters img').forEach(i=>i.style.border='');
   event.target.style.border='3px solid blue';
