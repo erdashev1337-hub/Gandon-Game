@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mini O‘yin - Jump ovozisiz</title>
+<title>Mini O‘yin - Silliq versiya</title>
 <style>
 body { text-align:center; background:#f0f0f0; margin:0; padding:0; font-family:sans-serif; user-select:none;}
 canvas { background:lightblue; border:2px solid black; display:none; margin:auto; width:100%; max-width:500px; height:auto;}
@@ -33,6 +33,9 @@ h2{margin:10px;}
     <img src="https://i.postimg.cc/dtt7Ndw5/image.png" alt="New utkpower" onclick="selectCharacter('https://i.postimg.cc/dtt7Ndw5/image.png','New Utkpower')">
     <img src="https://i.postimg.cc/4yMT1rJn/image.png" alt="Brother Tora" onclick="selectCharacter('https://i.postimg.cc/4yMT1rJn/image.png','Brother Tora')">
     <img src="https://i.postimg.cc/W4Wj3DQk/image.png" alt="RTXPower" onclick="selectCharacter('https://i.postimg.cc/W4Wj3DQk/image.png','RTXPower')">
+    <img src="https://i.postimg.cc/7P78vQYL/image.png" alt="Ong Bak" onclick="selectCharacter('https://i.postimg.cc/7P78vQYL/image.png', 'Ong Bak')">
+    <img src="https://i.postimg.cc/XvZ1fprX/image.png" alt="Hakimbek" onclick="selectCharacter('https://i.postimg.cc/XvZ1fprX/image.png', 'Hakimbek')">
+    <img src="https://i.postimg.cc/2St2Sr05/image.png" alt="Umid Boxer" onclick="selectCharacter('https://i.postimg.cc/2St2Sr05/image.png', 'Umid Boxer')">
   </div>
   <p id="selectedName"></p>
 </div>
@@ -44,12 +47,17 @@ h2{margin:10px;}
 const canvas=document.getElementById("gameCanvas"), ctx=canvas.getContext("2d");
 const scoreEl=document.getElementById("score"), hpEl=document.getElementById("hp"), gameOverEl=document.getElementById("gameOver");
 let selectedCharacter=null;
-function selectCharacter(img,name){ selectedCharacter=img; document.querySelectorAll('#characters img').forEach(i=>i.style.border=''); event.target.style.border='3px solid blue'; document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;}
 
-// AUDIO (jump ovozini olib tashladik)
-const bgMusic=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3'); bgMusic.loop=true; bgMusic.volume=0.4;
-const coinPool=Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3'));
-let coinIndex=0;
+function selectCharacter(img,name){
+  selectedCharacter=img;
+  document.querySelectorAll('#characters img').forEach(i=>i.style.border='');
+  event.target.style.border='3px solid blue';
+  document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;
+}
+
+// AUDIO (jump va coin ovozi yo‘q)
+const bgMusic=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
+bgMusic.loop=true; bgMusic.volume=0.4;
 const gameOverSound=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
 
 document.getElementById('start-btn').addEventListener('click', ()=>{
@@ -75,7 +83,7 @@ function drawCoins(){ ctx.fillStyle="gold"; coins.forEach(c=>{ if(!c.collected &
 function drawObstacles(){ obstacles.forEach(o=>{ if(o.x+o.width>0){ if(o.type==="spike"){ ctx.fillStyle="gray"; ctx.beginPath(); ctx.moveTo(o.x,o.y+o.height); ctx.lineTo(o.x+o.width/2,o.y); ctx.lineTo(o.x+o.width,o.y+o.height); ctx.closePath(); ctx.fill(); } else { ctx.fillStyle="brown"; ctx.fillRect(o.x,o.y,o.width,o.height); } } }); }
 
 function checkCollisions(){
-  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x-c.x)<100){ let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ c.collected=true; score++; scoreEl.innerText=score; coinPool[coinIndex].currentTime=0; coinPool[coinIndex].play(); coinIndex=(coinIndex+1)%coinPool.length; } } });
+  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x-c.x)<100){ let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ c.collected=true; score++; scoreEl.innerText=score; } } });
 
   obstacles.forEach(o=>{ if(o.type==="spike" && Math.abs(player.x-o.x)<100 && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){ hp--; updateHP(); obstacles=obstacles.filter(x=>x!==o); if(hp<=0){ bgMusic.pause(); gameOverSound.play(); gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score; gameOverEl.style.display='block'; } } });
 
@@ -84,7 +92,12 @@ function checkCollisions(){
 
 function update(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawGround(); drawPlayer(); drawCoins(); drawObstacles(); checkCollisions();
+  drawGround();
+  drawCoins();
+  drawObstacles();
+  drawPlayer(); // Player har doim ustda
+  checkCollisions();
+
   player.y+=player.dy; player.dy+=player.gravity;
   if(player.y+player.height>=canvas.height-groundHeight){ player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true; }
 
