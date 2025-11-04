@@ -97,15 +97,29 @@
       document.getElementById("selectedName").innerText = "Tanlangan qahramon: " + name;
     }
 
+    // AUDIO LINKLARI – GitHub Pages bilan ishlash
+    const bgMusic = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.4;
+
+    const jumpSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3');
+    const coinSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3');
+    const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
+
     document.getElementById('start-btn').addEventListener('click', () => {
       if (!selectedCharacter) {
         alert("Iltimos, qahramonni tanlang!");
         return;
       }
+
       document.getElementById('startScreen').style.display = 'none';
       document.getElementById('characterSelect').style.display = 'none';
       canvas.style.display = 'block';
       document.getElementById('controls').style.display = 'block';
+
+      // Autoplay cheklovini yengib, Play tugmasi bosilganda audio ishlaydi
+      bgMusic.play().catch(e => console.log("Audio play xatosi:", e));
+
       startGame();
     });
 
@@ -120,17 +134,9 @@
     const playerImg = new Image();
     let player = { x: 50, y: 220, width: 50, height: 50, dy: 0, gravity: 0.6, jumpPower: -10, grounded: false };
 
-    // AUDIO LINKLARI – sizning GitHub Pages linklaringiz
-    const bgMusic = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
-    bgMusic.loop = true; bgMusic.volume = 0.4;
-    const jumpSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3');
-    const coinSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3');
-    const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
-
     function startGame() {
       playerImg.src = selectedCharacter;
       updateHP();
-      bgMusic.play();
       update();
     }
 
@@ -161,6 +167,7 @@
           if (distance < player.width/2 + coin.radius) {
             coin.collected = true;
             score++; scoreEl.innerText = score;
+            jumpSound.currentTime = 0; jumpSound.play();
             coinSound.currentTime = 0; coinSound.play();
           }
         }
