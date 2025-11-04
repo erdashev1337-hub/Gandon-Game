@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mini O‘yin</title>
+<title>Mini O‘yin - Super Silliq</title>
 <style>
 body { text-align:center; background:#f0f0f0; margin:0; padding:0; font-family:sans-serif; user-select:none;}
 canvas { background:lightblue; border:2px solid black; display:none; margin:auto; width:100%; max-width:500px; height:auto;}
@@ -41,27 +41,17 @@ h2{margin:10px;}
 <div id="controls" style="display:none;"><button onclick="jump()">⬆️ Sakrash</button></div>
 
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const scoreEl = document.getElementById("score");
-const hpEl = document.getElementById("hp");
-const gameOverEl = document.getElementById("gameOver");
-
-let selectedCharacter = null;
-function selectCharacter(imgUrl, name){
-  selectedCharacter = imgUrl;
-  document.querySelectorAll('#characters img').forEach(img=>img.style.border='none');
-  event.target.style.border='3px solid blue';
-  document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;
-}
+const canvas=document.getElementById("gameCanvas"), ctx=canvas.getContext("2d");
+const scoreEl=document.getElementById("score"), hpEl=document.getElementById("hp"), gameOverEl=document.getElementById("gameOver");
+let selectedCharacter=null;
+function selectCharacter(img,name){ selectedCharacter=img; document.querySelectorAll('#characters img').forEach(i=>i.style.border=''); event.target.style.border='3px solid blue'; document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;}
 
 // AUDIO POOL
-const bgMusic = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
-bgMusic.loop = true; bgMusic.volume = 0.4;
-const jumpSounds = Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3'));
-const coinSounds = Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3'));
+const bgMusic=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3'); bgMusic.loop=true; bgMusic.volume=0.4;
+const jumpPool=Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/jump.mp3'));
+const coinPool=Array.from({length:5},()=>new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/coin.mp3'));
 let jumpIndex=0, coinIndex=0;
-const gameOverSound = new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
+const gameOverSound=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
 
 document.getElementById('start-btn').addEventListener('click', ()=>{
   if(!selectedCharacter){alert("Iltimos, qahramonni tanlang!"); return;}
@@ -69,69 +59,47 @@ document.getElementById('start-btn').addEventListener('click', ()=>{
   document.getElementById('characterSelect').style.display='none';
   canvas.style.display='block';
   document.getElementById('controls').style.display='block';
-  bgMusic.play().catch(e=>console.log("Audio play xatosi:",e));
+  bgMusic.play().catch(e=>console.log(e));
   startGame();
 });
 
-let score=0, hp=5, groundHeight=50;
-let coins=[], obstacles=[];
-let maxObjects=8, gameSpeed=3, frameCount=0;
-const playerImg = new Image();
-let player = {x:50,y:220,width:50,height:50,dy:0,gravity:0.6,jumpPower:-10,grounded:false};
+let score=0,hp=5,groundHeight=50;
+let coins=[], obstacles=[], maxObjects=8, gameSpeed=3, frameCount=0;
+const playerImg=new Image();
+let player={x:50,y:220,width:50,height:50,dy:0,gravity:0.6,jumpPower:-10,grounded:false};
 
-function startGame(){ playerImg.src = selectedCharacter; updateHP(); update(); }
-function updateHP(){ hpEl.innerText = "❤️".repeat(hp); }
+function startGame(){ playerImg.src=selectedCharacter; updateHP(); update(); }
+function updateHP(){ hpEl.innerText="❤️".repeat(hp); }
 function drawPlayer(){ ctx.drawImage(playerImg,player.x,player.y,player.width,player.height); }
 function drawGround(){ ctx.fillStyle="green"; ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight); }
-function drawCoins(){ ctx.fillStyle="gold"; coins.forEach(c=>{if(!c.collected){ctx.beginPath();ctx.arc(c.x,c.y,c.radius,0,Math.PI*2);ctx.fill();}}); }
-function drawObstacles(){ obstacles.forEach(o=>{ if(o.type==="spike"){ctx.fillStyle="gray"; ctx.beginPath();ctx.moveTo(o.x,o.y+o.height);ctx.lineTo(o.x+o.width/2,o.y);ctx.lineTo(o.x+o.width,o.y+o.height);ctx.closePath(); ctx.fill();} else{ctx.fillStyle="brown"; ctx.fillRect(o.x,o.y,o.width,o.height);}}); }
+function drawCoins(){ ctx.fillStyle="gold"; coins.forEach(c=>{ if(!c.collected && c.x>0 && c.x<canvas.width+20){ ctx.beginPath(); ctx.arc(c.x,c.y,c.radius,0,Math.PI*2); ctx.fill(); } }); }
+function drawObstacles(){ obstacles.forEach(o=>{ if(o.x+o.width>0){ if(o.type==="spike"){ ctx.fillStyle="gray"; ctx.beginPath(); ctx.moveTo(o.x,o.y+o.height); ctx.lineTo(o.x+o.width/2,o.y); ctx.lineTo(o.x+o.width,o.y+o.height); ctx.closePath(); ctx.fill(); } else { ctx.fillStyle="brown"; ctx.fillRect(o.x,o.y,o.width,o.height); } } }); }
 
 function checkCollisions(){
-  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x - c.x)<100){ 
-    let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; 
-    if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ 
-      c.collected=true; score++; scoreEl.innerText=score;
-      jumpSounds[jumpIndex].currentTime=0; jumpSounds[jumpIndex].play(); jumpIndex=(jumpIndex+1)%jumpSounds.length;
-      coinSounds[coinIndex].currentTime=0; coinSounds[coinIndex].play(); coinIndex=(coinIndex+1)%coinSounds.length;
-  }}});
+  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x-c.x)<100){ let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ c.collected=true; score++; scoreEl.innerText=score; jumpPool[jumpIndex].currentTime=0; jumpPool[jumpIndex].play(); jumpIndex=(jumpIndex+1)%jumpPool.length; coinPool[coinIndex].currentTime=0; coinPool[coinIndex].play(); coinIndex=(coinIndex+1)%coinPool.length; } } });
 
-  obstacles.forEach(o=>{ if(o.type==="spike" && Math.abs(player.x-o.x)<100 && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){
-    hp--; updateHP(); obstacles=obstacles.filter(x=>x!==o);
-    if(hp<=0){
-      bgMusic.pause(); gameOverSound.play();
-      gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score;
-      gameOverEl.style.display='block';
-    }
-  }});
+  obstacles.forEach(o=>{ if(o.type==="spike" && Math.abs(player.x-o.x)<100 && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){ hp--; updateHP(); obstacles=obstacles.filter(x=>x!==o); if(hp<=0){ bgMusic.pause(); gameOverSound.play(); gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score; gameOverEl.style.display='block'; } } });
 
-  player.grounded = player.y+player.height >= canvas.height-groundHeight;
+  player.grounded = player.y+player.height>=canvas.height-groundHeight;
 }
 
 function update(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawGround(); drawPlayer(); drawCoins(); drawObstacles(); checkCollisions();
-
-  player.y += player.dy; player.dy += player.gravity;
-  if(player.y+player.height>=canvas.height-groundHeight){player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true;}
+  player.y+=player.dy; player.dy+=player.gravity;
+  if(player.y+player.height>=canvas.height-groundHeight){ player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true; }
 
   coins.forEach(c=>c.x-=gameSpeed); obstacles.forEach(o=>o.x-=gameSpeed);
   coins=coins.filter(c=>c.x>-20); obstacles=obstacles.filter(o=>o.x>-60);
 
   frameCount++;
-  if(frameCount%120===0 && coins.length<maxObjects){ let y = canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:y,radius:10,collected:false}); }
+  if(frameCount%120===0 && coins.length<maxObjects){ let y=canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:y,radius:10,collected:false}); }
   if(frameCount%200===0 && obstacles.length<maxObjects){ let h=Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-h,width:15,height:h}); }
 
   if(hp>0) requestAnimationFrame(update);
 }
 
-function jump(){ 
-  if(player.grounded){ 
-    player.dy=player.jumpPower; 
-    player.grounded=false; 
-    jumpSounds[jumpIndex].currentTime=0; jumpSounds[jumpIndex].play(); 
-    jumpIndex=(jumpIndex+1)%jumpSounds.length;
-  }
-}
+function jump(){ if(player.grounded){ player.dy=player.jumpPower; player.grounded=false; jumpPool[jumpIndex].currentTime=0; jumpPool[jumpIndex].play(); jumpIndex=(jumpIndex+1)%jumpPool.length; } }
 </script>
 </body>
 </html>
