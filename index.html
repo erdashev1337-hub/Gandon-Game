@@ -49,14 +49,14 @@ const scoreEl=document.getElementById("score"), hpEl=document.getElementById("hp
 let selectedCharacter=null;
 
 function selectCharacter(img,name,event){
-  event.preventDefault(); // double tap zoomni to‘xtatadi
+  event.preventDefault();
   selectedCharacter=img;
   document.querySelectorAll('#characters img').forEach(i=>i.style.border='');
   event.target.style.border='3px solid blue';
   document.getElementById("selectedName").innerText="Tanlangan qahramon: "+name;
 }
 
-// AUDIO (jump va coin ovozi yo‘q)
+// AUDIO (jump va coin yo‘q)
 const bgMusic=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/bg-music.mp3');
 bgMusic.loop=true; bgMusic.volume=0.4;
 const gameOverSound=new Audio('https://erdashev1337-hub.github.io/Gandon-Game/Music/game-over.mp3');
@@ -74,21 +74,96 @@ document.getElementById('start-btn').addEventListener('click', ()=>{
 let score=0,hp=5,groundHeight=50;
 let coins=[], obstacles=[], maxObjects=8, gameSpeed=3, frameCount=0;
 const playerImg=new Image();
-let player={x:50,y:220,width:50,height:50,dy:0,gravity:0.6,jumpPower:-10,grounded:false};
 
-function startGame(){ playerImg.src=selectedCharacter; updateHP(); update(); }
+let player={
+  x:50,y:220,width:50,height:50,
+  dy:0,
+  gravity:0.6,
+  jumpPower:-10,   // default
+  grounded:false
+};
+
+function startGame(){
+  playerImg.src=selectedCharacter;
+
+  // 🟦 Faqat Utkpower uchun kuchli sakrash
+  if (selectedCharacter.includes("dZy1d1pQ")) { 
+      player.jumpPower = -18; 
+  }
+
+  updateHP();
+  update();
+}
+
 function updateHP(){ hpEl.innerText="❤️".repeat(hp); }
+
 function drawPlayer(){ ctx.drawImage(playerImg,player.x,player.y,player.width,player.height); }
+
 function drawGround(){ ctx.fillStyle="green"; ctx.fillRect(0,canvas.height-groundHeight,canvas.width,groundHeight); }
-function drawCoins(){ ctx.fillStyle="gold"; coins.forEach(c=>{ if(!c.collected && c.x>0 && c.x<canvas.width+20){ ctx.beginPath(); ctx.arc(c.x,c.y,c.radius,0,Math.PI*2); ctx.fill(); } }); }
-function drawObstacles(){ obstacles.forEach(o=>{ if(o.x+o.width>0){ if(o.type==="spike"){ ctx.fillStyle="gray"; ctx.beginPath(); ctx.moveTo(o.x,o.y+o.height); ctx.lineTo(o.x+o.width/2,o.y); ctx.lineTo(o.x+o.width,o.y+o.height); ctx.closePath(); ctx.fill(); } else { ctx.fillStyle="brown"; ctx.fillRect(o.x,o.y,o.width,o.height); } } }); }
+
+function drawCoins(){
+  ctx.fillStyle="gold";
+  coins.forEach(c=>{
+    if(!c.collected && c.x>0 && c.x<canvas.width+20){
+      ctx.beginPath(); ctx.arc(c.x,c.y,c.radius,0,Math.PI*2); ctx.fill();
+    }
+  });
+}
+
+function drawObstacles(){
+  obstacles.forEach(o=>{
+    if(o.x+o.width>0){
+      if(o.type==="spike"){
+        ctx.fillStyle="gray";
+        ctx.beginPath();
+        ctx.moveTo(o.x,o.y+o.height);
+        ctx.lineTo(o.x+o.width/2,o.y);
+        ctx.lineTo(o.x+o.width,o.y+o.height);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.fillStyle="brown";
+        ctx.fillRect(o.x,o.y,o.width,o.height);
+      }
+    }
+  });
+}
 
 function checkCollisions(){
-  coins.forEach(c=>{ if(!c.collected && Math.abs(player.x-c.x)<100){ let dx=(player.x+player.width/2)-c.x; let dy=(player.y+player.height/2)-c.y; if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){ c.collected=true; score++; scoreEl.innerText=score; } } });
+  coins.forEach(c=>{
+    if(!c.collected && Math.abs(player.x-c.x)<100){
+      let dx=(player.x+player.width/2)-c.x;
+      let dy=(player.y+player.height/2)-c.y;
+      if(Math.sqrt(dx*dx+dy*dy)<player.width/2+c.radius){
+        c.collected=true;
+        score++;
+        scoreEl.innerText=score;
+      }
+    }
+  });
 
-  obstacles.forEach(o=>{ if(o.type==="spike" && Math.abs(player.x-o.x)<100 && player.x<o.x+o.width && player.x+player.width>o.x && player.y<o.y+o.height && player.y+player.height>o.y){ hp--; updateHP(); obstacles=obstacles.filter(x=>x!==o); if(hp<=0){ bgMusic.pause(); gameOverSound.play(); gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score; gameOverEl.style.display='block'; } } });
+  obstacles.forEach(o=>{
+    if(o.type==="spike" &&
+       Math.abs(player.x-o.x)<100 &&
+       player.x<o.x+o.width &&
+       player.x+player.width>o.x &&
+       player.y<o.y+o.height &&
+       player.y+player.height>o.y){
 
-  player.grounded = player.y+player.height>=canvas.height-groundHeight;
+      hp--;
+      updateHP();
+      obstacles = obstacles.filter(x=>x!==o);
+
+      if(hp<=0){
+        bgMusic.pause();
+        gameOverSound.play();
+        gameOverEl.innerText="❌ O‘yin tugadi! Ball: "+score;
+        gameOverEl.style.display='block';
+      }
+    }
+  });
+
+  player.grounded = player.y+player.height >= canvas.height-groundHeight;
 }
 
 function update(){
@@ -96,23 +171,45 @@ function update(){
   drawGround();
   drawCoins();
   drawObstacles();
-  drawPlayer(); // Player har doim ustda
+  drawPlayer();
   checkCollisions();
 
-  player.y+=player.dy; player.dy+=player.gravity;
-  if(player.y+player.height>=canvas.height-groundHeight){ player.y=canvas.height-groundHeight-player.height; player.dy=0; player.grounded=true; }
+  player.y += player.dy;
+  player.dy += player.gravity;
 
-  coins.forEach(c=>c.x-=gameSpeed); obstacles.forEach(o=>o.x-=gameSpeed);
-  coins=coins.filter(c=>c.x>-20); obstacles=obstacles.filter(o=>o.x>-60);
+  if(player.y+player.height >= canvas.height-groundHeight){
+    player.y = canvas.height-groundHeight-player.height;
+    player.dy = 0;
+    player.grounded = true;
+  }
+
+  coins.forEach(c=>c.x -= gameSpeed);
+  obstacles.forEach(o=>o.x -= gameSpeed);
+
+  coins = coins.filter(c=>c.x>-20);
+  obstacles = obstacles.filter(o=>o.x>-60);
 
   frameCount++;
-  if(frameCount%120===0 && coins.length<maxObjects){ let y=canvas.height-groundHeight-(Math.random()*60+40); coins.push({x:canvas.width+20,y:y,radius:10,collected:false}); }
-  if(frameCount%200===0 && obstacles.length<maxObjects){ let h=Math.random()*15+15; obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-h,width:15,height:h}); }
+
+  if(frameCount%120===0 && coins.length<maxObjects){
+    let y=canvas.height-groundHeight-(Math.random()*60+40);
+    coins.push({x:canvas.width+20,y:y,radius:10,collected:false});
+  }
+
+  if(frameCount%200===0 && obstacles.length<maxObjects){
+    let h=Math.random()*15+15;
+    obstacles.push({type:"spike",x:canvas.width+50,y:canvas.height-groundHeight-h,width:15,height:h});
+  }
 
   if(hp>0) requestAnimationFrame(update);
 }
 
-function jump(){ if(player.grounded){ player.dy=player.jumpPower; player.grounded=false; } }
+function jump(){
+  if(player.grounded){
+    player.dy = player.jumpPower;
+    player.grounded = false;
+  }
+}
 </script>
 </body>
 </html>
